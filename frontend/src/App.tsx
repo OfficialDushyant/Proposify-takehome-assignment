@@ -76,6 +76,7 @@ function App() {
 
   return (
     <div className="container">
+      {user? <h1>Welcome, {user.username}.</h1> : null}
       <h1>Real-Time Collaborative Notes</h1>
       <button onClick={handleCreateNote}>Create New Note</button>
       <div className="main-content">
