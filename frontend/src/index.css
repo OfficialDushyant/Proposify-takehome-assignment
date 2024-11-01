@@ -1,0 +1,9 @@
+/* src/index.css */
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+}
+
+.ql-editor {
+  min-height: 300px;
+}
