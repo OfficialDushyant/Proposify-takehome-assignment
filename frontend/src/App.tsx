@@ -85,7 +85,7 @@ function App() {
             {notes.map((note) => (
               <li key={note.id}>
                 <button onClick={() => handleSelectNote(note.id)}>
-                  Note {note.label}
+                 {note.label}
                 </button>
                 <button onClick={() => handleDeleteNote(note.id)}>Delete</button>
               </li>

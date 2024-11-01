@@ -30,4 +30,9 @@
 .editor {
   border: 1px solid #ccc;
   min-height: 300px;
+
+}
+
+.ql-editor {
+  white-space: pre-wrap;
 }
