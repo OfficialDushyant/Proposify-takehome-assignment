@@ -13,6 +13,7 @@ A real-time collaborative note-taking application built with React, Node.js, Soc
 - [Running Tests](#running-tests)
 - [Project Structure](#project-structure)
 - [Technologies Used](#technologies-used)
+- [Additional Notes](#additional-notes)
 
 
 ---
@@ -133,3 +134,17 @@ This will run the unit tests using **Vitest**.
     - Typescript
     - Socket.io
 
+## Additional Notes
+
+- **Cross-Origin Resource Sharing (CORS):** 
+    - The backend server is configured to allow CORS from any origin (*). Adjust this in SocketServer.ts if necessary.
+
+- **Known Issues:**
+    - **Whitespace Handling:** The application requires using Quill’s Delta format to manage text content, ensuring that spaces and formatting are preserved during real-time collaboration. After reviewing the documentation, I identified a solution; however, implementing it would have exceeded the time constraints, so I did not include it in the initial submission. I plan to address this in a future update.
+    - **Testing Quill Components:** When writing tests involving Quill, it’s recommended to mock the editor to avoid complexities.
+
+- **Future Enhancements:**
+    - **User Authentication:** Implement a robust authentication system.
+    - **Database Integration:** Persist notes in a database like MongoDB or PostgreSQL.
+    - **Conflict Resolution:** Improve collaborative editing with operational transforms or CRDTs.
+    - **UI/UX Improvements:** Enhance the user interface for better usability.
