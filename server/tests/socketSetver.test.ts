@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll, beforeEach, afterAll, afterEach } from 'vitest';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
-import Client from 'socket.io-client';
+import { Server } from 'socket.io';
+import Client, { Socket } from 'socket.io-client';
 import { initializeSocket } from '../src/SocketServer';
 
 describe('Socket Server', () => {
@@ -23,7 +23,7 @@ describe('Socket Server', () => {
 
   beforeEach(async () => {
     clientSocket = Client(`http://localhost:${(httpServer.address() as any).port}`);
-    await new Promise((resolve) => clientSocket.on('connect', resolve));
+    await new Promise((resolve: any) => clientSocket.on('connect', resolve));
   });
 
   afterEach(() => {
@@ -32,20 +32,32 @@ describe('Socket Server', () => {
     }
   });
 
-  test('should authenticate user', async () => {
-    const username = 'testUser';
+  test('should create and edit a note', (done) => {
+    clientSocket.emit('authenticate', 'testUser');
 
-    clientSocket.emit('authenticate', username);
+    clientSocket.on('authenticated', () => {
+      clientSocket.emit('createNote', 'Test Note');
 
-    const authenticatedUser = await new Promise((resolve) => {
-      clientSocket.on('authenticated', (user) => {
-        resolve(user);
+      clientSocket.on('noteCreated', (note) => {
+        expect(note).toHaveProperty('id');
+        const noteId = note.id;
+
+        clientSocket.emit('joinNote', noteId);
+
+        clientSocket.on('noteContent', (note) => {
+          expect(note.id).toBe(noteId);
+
+          clientSocket.emit('editNote', {
+            noteId,
+            content: 'Updated Content',
+          });
+
+          clientSocket.on('noteUpdated', (updatedNote) => {
+            expect(updatedNote.content).toBe('Updated Content');
+            done;
+          });
+        });
       });
-    });
-
-    expect(authenticatedUser).toEqual({
-      id: clientSocket.id,
-      username: 'testUser',
     });
   });
 });

@@ -1,9 +1,7 @@
 // src/App.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
-import './index.css';
+import NoteEditor from './components/NoteEditor'; // Import the new component
 
 interface User {
   id: string;
@@ -11,76 +9,97 @@ interface User {
 }
 
 interface Note {
+  id: string;
+  label: string;
   content: string;
   lastEditedBy: string;
 }
 
-const TOOLBAR_OPTIONS = [
-  [{ header: [1, 2, false] }],
-  ['bold', 'italic', 'underline'],
-  [{ list: 'ordered' }, { list: 'bullet' }],
-  ['clean'],
-];
-
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const quillRef = useRef<HTMLDivElement>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
   useEffect(() => {
     const s = io('http://localhost:4000');
     setSocket(s);
+
+    s.on('noteList', (notes: Note[]) => {
+      setNotes(notes);
+    });
+
+    s.on('noteCreated', (note: Note) => {
+      setNotes((prevNotes) => [...prevNotes, note]);
+    });
+
+    s.on('noteDeleted', (noteId: string) => {
+      setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+      if (selectedNote?.id === noteId) {
+        setSelectedNote(null);
+      }
+    });
+
+    s.on('connect', () => {
+      const username = prompt('Enter your username');
+      if (username) {
+        s.emit('authenticate', username);
+      }
+    });
+
+    s.on('authenticated', (userData: User) => {
+      setUser(userData);
+    });
 
     return () => {
       s.disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    if (socket == null || quillRef.current == null) return;
+  const handleCreateNote = () => {
+    const noteTitle = prompt('Enter note title');
+    if (noteTitle && socket) {
+      socket.emit('createNote', noteTitle);
+    }
+  };
 
-    const editor = new Quill(quillRef.current, {
-      theme: 'snow',
-      modules: { toolbar: TOOLBAR_OPTIONS },
-    });
+  const handleDeleteNote = (noteId: string) => {
+    if (socket) {
+      socket.emit('deleteNote', noteId);
+    }
+  };
 
-    editor.disable();
-    editor.setText('Loading...');
-
-    socket.on('noteUpdate', (note: Note) => {
-      console.log(note.content)
-      editor.setContents(editor.clipboard.convert({html: note.content}));
-      editor.enable();
-    });
-
-    socket.on('connect', () => {
-      const username = prompt('Enter your username');
-      if (username) {
-        socket.emit('authenticate', username);
-      }
-    });
-
-    socket.on('authenticated', (userData: User) => {
-      setUser(userData);
-    });
-
-    const handler = (delta: any, oldDelta: any, source: string) => {
-      if (source !== 'user') return;
-      socket.emit('editNote', { content: editor.root.innerHTML });
-    };
-
-    editor.on('text-change', handler);
-
-    return () => {
-      socket.off('noteUpdate');
-      editor.off('text-change', handler);
-    };
-  }, [socket]);
+  const handleSelectNote = (noteId: string) => {
+    const note = notes.find((n) => n.id === noteId);
+    setSelectedNote(note || null);
+  };
 
   return (
     <div className="container">
-      <h1>Real-Time Collaborative Note</h1>
-      <div ref={quillRef}></div>
+      <h1>Real-Time Collaborative Notes</h1>
+      <button onClick={handleCreateNote}>Create New Note</button>
+      <div className="main-content">
+        <div className="note-list">
+          <h2>Notes</h2>
+          <ul>
+            {notes.map((note) => (
+              <li key={note.id}>
+                <button onClick={() => handleSelectNote(note.id)}>
+                  Note {note.label}
+                </button>
+                <button onClick={() => handleDeleteNote(note.id)}>Delete</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="editor-container">
+          {selectedNote && socket ? (
+            <NoteEditor selectedNote={selectedNote} socket={socket} key={selectedNote.id} />
+          ) : (
+            <div>Please select a note to edit.</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

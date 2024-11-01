@@ -1,9 +1,33 @@
-/* src/index.css */
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 50px auto;
 }
 
-.ql-editor {
+.main-content {
+  display: flex;
+}
+
+.note-list {
+  width: 200px;
+  border-right: 1px solid #ccc;
+  padding-right: 20px;
+}
+
+.note-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.note-list li {
+  margin-bottom: 10px;
+}
+
+.editor-container {
+  flex: 1;
+  padding-left: 20px;
+}
+
+.editor {
+  border: 1px solid #ccc;
   min-height: 300px;
 }
