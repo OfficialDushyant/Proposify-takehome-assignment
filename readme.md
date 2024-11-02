@@ -94,7 +94,7 @@ This will run the unit tests using **Vitest**.
 From server dir run `npm run test`.
 This will run the unit tests using **Vitest**.
 
-## Project s
+## Project Structure
 ```realtime-collaborative-notes/
 ├── backend/
 │   ├── package.json
