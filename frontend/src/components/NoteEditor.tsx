@@ -1,16 +1,18 @@
 // src/NoteEditor.tsx
-import React, { useEffect, useRef, forwardRef } from 'react';
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
-import { Socket } from 'socket.io-client';
-import { Note } from '../types'
+import React, { useEffect, useState } from 'react';
+import { type Socket }from 'socket.io-client';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
+interface Note {
+  id: string;
+  content: string;
+  lastEditedBy: string;
+}
 
-
-type Props = {
+interface Props {
   selectedNote: Note;
   socket: Socket;
-  ref: HTMLElement | null;
 }
 
 const TOOLBAR_OPTIONS = [
@@ -20,58 +22,45 @@ const TOOLBAR_OPTIONS = [
   ['clean'],
 ];
 
-const NoteEditor: React.FC<Props> = forwardRef({ selectedNote, socket }, ref) => {
-  const editorRef = useRef<Quill | null>(null);
-  const quillElementRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!quillElementRef.current) return;
-
-    // Initialize the editor
-    const editor = new Quill(quillElementRef.current, {
-      theme: 'snow',
-      modules: { toolbar: TOOLBAR_OPTIONS },
-    });
-    editorRef.current = editor;
-
-    editor.disable();
-    editor.setText('Loading...');
-
-    const handleTextChange = (delta: DeltaStatic, oldDelta: DeltaStatic, source: string) => {
-      if (source !== 'user') return;
-      socket.emit('editNote', { noteId: selectedNote.id, delta });
+const NoteEditor: React.FC<Props> = ({ selectedNote, socket }) => {
+    const [content, setContent] = useState<string>('');
+  
+    useEffect(() => {
+      socket.emit('joinNote', selectedNote.id);
+  
+      const handleNoteContent = (note: Note) => {
+        setContent(note.content);
+      };
+  
+      const handleNoteUpdated = (note: Note) => {
+        if (note.id === selectedNote.id) {
+          setContent(note.content);
+        }
+      };
+  
+      socket.on('noteContent', handleNoteContent);
+      socket.on('noteUpdated', handleNoteUpdated);
+  
+      return () => {
+        socket.emit('leaveNote', selectedNote.id);
+        socket.off('noteContent', handleNoteContent);
+        socket.off('noteUpdated', handleNoteUpdated);
+      };
+    }, [selectedNote.id]);
+  
+    const handleChange = (value: string) => {
+      setContent(value);
+      socket.emit('editNote', { noteId: selectedNote.id, content: value });
     };
-
-    editor.on('text-change', handleTextChange);
-
-    socket.emit('joinNote', selectedNote.id);
-
-    const handleNoteContent = (data: { noteId: string; content: any }) => {
-      if (data.noteId === selectedNote.id) {
-        editor.setContents(data.content);
-        editor.enable();
-      }
-    };
-
-    const handleNoteUpdated = (data: { noteId: string; delta: any }) => {
-      if (data.noteId === selectedNote.id) {
-        editor.updateContents(data.delta);
-      }
-    };
-
-    socket.on('noteContent', handleNoteContent);
-    socket.on('noteUpdated', handleNoteUpdated);
-
-    return () => {
-      socket.emit('leaveNote', selectedNote.id);
-      socket.off('noteContent', handleNoteContent);
-      socket.off('noteUpdated', handleNoteUpdated);
-      editor.off('text-change', handleTextChange);
-      editorRef.current = null;
-    };
-  }, [selectedNote.id, socket]);
-
-  return <div className="editor" ref={quillElementRef}></div>;
-};
-
-export default NoteEditor;
+  
+    return (
+      <ReactQuill
+        value={content}
+        onChange={handleChange}
+        modules={{ toolbar: TOOLBAR_OPTIONS }}
+        key={selectedNote.id}
+      />
+    );
+  };
+  
+  export default NoteEditor;

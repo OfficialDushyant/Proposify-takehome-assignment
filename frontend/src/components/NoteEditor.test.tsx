@@ -65,7 +65,7 @@ describe('NoteEditor Component', () => {
     });
   });
 
-  test('updates content when noteUpdated event is received', async () => {
+  test('updates content when noteUpdated event is received', async() => {
     render(<NoteEditor selectedNote={testNote} socket={mockSocket} />);
 
     // Find the 'noteUpdated' handler
