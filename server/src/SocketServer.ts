@@ -10,7 +10,7 @@ interface User {
 interface Note {
   id: string;
   label: string;
-  content: string;
+  content: any;
   lastEditedBy: string;
 }
 
