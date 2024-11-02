@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
 import { vi } from 'vitest';
 import NoteEditor from './NoteEditor';
@@ -77,15 +77,17 @@ describe('NoteEditor Component', () => {
       lastEditedBy: 'User2',
     };
 
-    if (noteUpdatedHandler) {
+    // Simulate receiving an updated note within act
+  if (noteUpdatedHandler) {
+    await act(async () => {
       noteUpdatedHandler(updatedNote);
-    }
+    });
+  }
 
     // Check if the textarea has the new content
-    await waitFor(() => {
-        const editorElement = screen.getByTestId('editor') as HTMLTextAreaElement;
-        expect(editorElement.value).toBe('<p>New content from another user</p>');
-      });
+    // Assert the updated content
+  const editorElement = screen.getByTestId('editor') as HTMLTextAreaElement;
+  expect(editorElement.value).toBe('<p>New content from another user</p>');
   });
 
   test('cleans up event listeners on unmount', () => {
