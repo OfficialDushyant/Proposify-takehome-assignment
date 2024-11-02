@@ -3,12 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { type Socket }from 'socket.io-client';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { Note } from '../types';
 
-interface Note {
-  id: string;
-  content: string;
-  lastEditedBy: string;
-}
 
 interface Props {
   selectedNote: Note;

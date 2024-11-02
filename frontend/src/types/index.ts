@@ -1,6 +1,6 @@
 export interface Note {
     id: string;
-    content: any; 
+    content: string; 
     label: string;
     lastEditedBy: string;
   }

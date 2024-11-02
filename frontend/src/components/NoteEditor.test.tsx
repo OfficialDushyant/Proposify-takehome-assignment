@@ -3,12 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Socket } from 'socket.io-client';
 import { vi } from 'vitest';
 import NoteEditor from './NoteEditor';
-
-interface Note {
-  id: string;
-  content: string;
-  lastEditedBy: string;
-}
+import { Note } from '../types';
 
 // Mock Socket.io client
 const mockSocket = {
@@ -31,6 +26,7 @@ vi.mock('react-quill', () => {
 describe('NoteEditor Component', () => {
   const testNote: Note = {
     id: 'test-note-id',
+    label:'Test Note',
     content: '<p>Initial content</p>',
     lastEditedBy: 'User1',
   };
@@ -76,6 +72,7 @@ describe('NoteEditor Component', () => {
     // Simulate receiving an updated note
     const updatedNote: Note = {
       id: 'test-note-id',
+      label:'Test Note',
       content: '<p>New content from another user</p>',
       lastEditedBy: 'User2',
     };
