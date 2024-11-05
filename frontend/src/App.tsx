@@ -1,18 +1,16 @@
 // src/App.tsx
-import React, { useEffect, useState, useRef } from 'react';
-import Quill from 'quill';
+import React, { useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import NoteEditor from './components/NoteEditor'; // Import the new component
 import { User, Note } from './types'
 
-const Delta = Quill.import('delta');
 
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const quillRef = useRef();
+
 
   useEffect(() => {
     const s = io('http://localhost:4000');
@@ -88,7 +86,7 @@ function App() {
         </div>
         <div className="editor-container">
           {selectedNote && socket ? (
-            <NoteEditor ref={quillRef}  defaultValue={new Delta()} selectedNote={selectedNote} socket={socket} key={selectedNote.id} />
+            <NoteEditor selectedNote={selectedNote} socket={socket} key={selectedNote.id} />
           ) : (
             <div>Please select a note to edit.</div>
           )}

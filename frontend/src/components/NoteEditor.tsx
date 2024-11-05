@@ -42,7 +42,7 @@ const NoteEditor: React.FC<Props> = ({ selectedNote, socket }) => {
         socket.off('noteContent', handleNoteContent);
         socket.off('noteUpdated', handleNoteUpdated);
       };
-    }, [selectedNote.id]);
+    }, [selectedNote.id, socket]);
   
     const handleChange = (value: string) => {
       setContent(value);
